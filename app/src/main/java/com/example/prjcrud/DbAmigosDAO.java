@@ -45,5 +45,19 @@ public class DbAmigosDAO {
         return amigos;
     }
 
+    public DbAmigo ultimoAmigo(){
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos ORDER BY ID DESC", null);
+        if(cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndex("ID"));
+            String nome = cursor.getString(cursor.getColumnIndex("Nome"));
+            String celular = cursor.getString(cursor.getColumnIndex("Celular"));
+            String latitude = cursor.getString(cursor.getColumnIndex("Latitude"));
+            String longitude = cursor.getString(cursor.getColumnIndex("Longitude"));
+            int status = cursor.getInt(cursor.getColumnIndex("Status"));
+            cursor.close();
+            return new DbAmigo(id, nome, celular, latitude, longitude, status);
+        }
+        return null;
+    }
 
 }

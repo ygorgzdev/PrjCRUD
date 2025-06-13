@@ -37,7 +37,7 @@ public class DbAmigo implements Serializable {
     }
 
     public String getLongitude(){
-        return this.nome;
+        return this.longitude;
     }
 
     public int getStatus(){

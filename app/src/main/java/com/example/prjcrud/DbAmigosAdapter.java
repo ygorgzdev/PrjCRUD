@@ -30,6 +30,11 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
     public int getItemCount() {
         return amigos != null ? amigos.size() : 0;
     }
+    public void inserirAmigo(DbAmigo amigo){
+        amigos.add(amigo);
+        notifyItemInserted(getItemCount());
+    }
+
 }
 
 
