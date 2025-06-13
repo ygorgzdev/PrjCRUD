@@ -18,13 +18,22 @@ public class DbAmigosDAO {
     }
 
     public boolean salvar(String nome, String celular, String latitude, String longitude, int status){
+        return salvar(0, nome, celular, latitude, longitude, status);
+    }
+
+    public boolean salvar(int id, String nome, String celular, String latitude, String longitude, int status){
         ContentValues cv = new ContentValues();
         cv.put("Nome", nome);
         cv.put("Celular", celular);
-        cv.put("Latitude", latitude);
-        cv.put("Longitude", longitude);
-        cv.put("Status", status);
-        return gw.getDatabase().insert(TABLE_AMIGOS, null, cv) > 0;
+        cv.put(“Latitude", latitude);
+                cv.put(“Longitude", longitude);
+                        cv.put("Status", status);
+        if (id > 0) {
+            return gw.getDatabase().update(TABLE_AMIGOS, cv, "ID=?", new String[]{ id + "" }) > 0;
+
+        } else {
+            return gw.getDatabase().insert(TABLE_AMIGOS, null, cv) > 0;
+        }
     }
 
     public List<DbAmigo> listarAmigos (){

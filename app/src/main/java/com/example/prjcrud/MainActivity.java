@@ -1,5 +1,6 @@
 package com.example.prjcrud;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -22,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +38,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
+
+        Intent intent = getIntent();
+        if(intent.hasExtra("amigo")){
+            findViewById(R.id.include_cadastrar_amigo).setVisibility(View.VISIBLE);
+            findViewById(R.id.include_listar_amigos).setVisibility(View.INVISIBLE);
+            findViewById(R.id.fab).setVisibility(View.INVISIBLE);
+            amigoAlterado = (DbAmigo) intent.getSerializableExtra("amigo");
+            EditText edtNome     = (EditText)findViewById(R.id.edtNome);
+            EditText edtCelular  = (EditText)findViewById(R.id.edtCelular);
+            EditText edtLatitude = (EditText)findViewById(R.id.edtLatitude);
+            EditText edtLongitude = (EditText)findViewById(R.id.edtLongitude);
+
+            edtNome.setText(amigoAlterado.getNome());
+            edtCelular.setText(amigoAlterado.getCelular());
+            int status = 2;
+        }
+
+
 /*
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -86,6 +106,10 @@ public class MainActivity extends AppCompatActivity {
                 boolean sucesso = dao.salvar(nome, celular, latitude, longitude, situacao);
 
                 if (sucesso) {
+
+                    DbAmigo amigo = dao.ultimoAmigo();
+                    adapter.inserirAmigo(amigo);
+
                     Snackbar.make(view, "Dados de [" + nome + "] salvos com sucesso!", Snackbar.LENGTH_LONG)
                             .setAction("Ação", null).show();
 
@@ -148,4 +172,14 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
+
+    DbAmigo amigoAlterado = null;
+    private int getIndex(Spinner spinner, String myString) {
+        int index = 0;
+        for (int i=0;(i<spinner.getCount())&&!(spinner.getItemAtPosition(i).toString().equalsIgnoreCase(myString));i++);
+        return index;
+    }
+
+
+
 }
