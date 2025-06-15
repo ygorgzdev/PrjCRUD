@@ -25,8 +25,8 @@ public class DbAmigosDAO {
         ContentValues cv = new ContentValues();
         cv.put("Nome", nome);
         cv.put("Celular", celular);
-        cv.put(“Latitude", latitude);
-                cv.put(“Longitude", longitude);
+        cv.put("Latitude", latitude);
+                cv.put("Longitude", longitude);
                         cv.put("Status", status);
         if (id > 0) {
             return gw.getDatabase().update(TABLE_AMIGOS, cv, "ID=?", new String[]{ id + "" }) > 0;
@@ -68,5 +68,10 @@ public class DbAmigosDAO {
         }
         return null;
     }
+
+    public boolean excluir(int id){
+        return gw.getDatabase().delete(TABLE_AMIGOS, "ID=?", new String[]{ id + "" }) > 0;
+    }
+
 
 }

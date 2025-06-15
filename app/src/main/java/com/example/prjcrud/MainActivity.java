@@ -134,7 +134,10 @@ public class MainActivity extends AppCompatActivity {
                             .setAction("Ação", null).show();
                 }
             }
+
         });
+
+        configurarRecycler();
 }
 
     @Override

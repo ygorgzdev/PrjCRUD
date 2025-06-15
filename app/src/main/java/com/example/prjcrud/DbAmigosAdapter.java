@@ -1,7 +1,9 @@
 package com.example.prjcrud;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +11,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.List;
 
 public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
@@ -69,6 +74,44 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
         }
         return null;
     }
+
+    public void excluirAmigo(DbAmigo amigo)
+    {
+        int position = amigos.indexOf(amigo);
+        amigos.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    final DbAmigo amigo = amigos.get(position);
+      holder.btnExcluir.setOnClickListener(new Button.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            final View view = v;
+            AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+            builder.setTitle("Confirmação")
+                    .setMessage("Tem certeza que deseja excluir o amigo ["+amigo.getNome().toString()+"]?")
+                    .setPositiveButton("Excluir", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            DbAmigo amigo = amigos.get(position);
+                            DbAmigosDAO dao = new DbAmigosDAO(view.getContext());
+                            boolean sucesso = dao.excluir(amigo.getId());
+                            if(sucesso) {
+                                Snackbar.make(view, "Excluindo o amigo ["+amigo.getNome().toString()+"]!", Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                excluirAmigo(amigo);
+                            }else{
+                                Snackbar.make(view, "Erro ao excluir o amigo ["+amigo.getNome().toString()+"]!", Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                            }
+                        }
+                    })
+                    .setNegativeButton("Cancelar", null)
+                    .create()
+                    .show();
+        }
+    });
+
 
 
 }
