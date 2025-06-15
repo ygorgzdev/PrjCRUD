@@ -92,6 +92,14 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
         notifyItemChanged(amigos.indexOf(amigo));
     }
 
+    public void excluirAmigo(DbAmigo amigo)
+    {
+        int position = amigos.indexOf(amigo);
+        amigos.remove(position);
+        notifyItemRemoved(position);
+    }
+
+
 
     private Activity getActivity(View view) {
         Context context = view.getContext();
