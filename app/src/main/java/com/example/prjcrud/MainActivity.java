@@ -84,36 +84,42 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         Button btnSalvar = (Button) findViewById(R.id.btnSalvar);
         btnSalvar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Sincronizando os campos com o contexto
                 EditText edtNome = (EditText) findViewById(R.id.edtNome);
                 EditText edtCelular = (EditText) findViewById(R.id.edtCelular);
                 EditText edtLatitude = (EditText) findViewById(R.id.edtLatitude);
                 EditText edtLongitude = (EditText) findViewById(R.id.edtLongitude);
 
-                // Adaptando atributos
                 String nome = edtNome.getText().toString();
                 String celular = edtCelular.getText().toString();
                 String latitude = edtLatitude.getText().toString();
                 String longitude = edtLongitude.getText().toString();
-                int situacao = 1;
-
-// Gravando no banco de dados
                 DbAmigosDAO dao = new DbAmigosDAO(getBaseContext());
-                boolean sucesso = dao.salvar(nome, celular, latitude, longitude, situacao);
-
+                boolean sucesso;
+                if (amigoAlterado != null) {
+                    sucesso = dao.salvar(amigoAlterado.getId(), nome, celular, latitude, longitude, 2);
+                } else {
+                    sucesso = dao.salvar(nome, celular, latitude, longitude, 1);
+                }
                 if (sucesso) {
-
                     DbAmigo amigo = dao.ultimoAmigo();
-                    adapter.inserirAmigo(amigo);
+
+                    if (amigoAlterado != null) {
+                        adapter.atualizarAmigo(amigo);
+                        amigoAlterado = null;
+
+                        configurarRecycler();
+                    } else {
+                        adapter.inserirAmigo(amigo);
+                    }
 
                     Snackbar.make(view, "Dados de [" + nome + "] salvos com sucesso!", Snackbar.LENGTH_LONG)
                             .setAction("Ação", null).show();
-
-                    // Inicializando os campos do contexto
+                    
                     edtNome.setText("");
                     edtCelular.setText("");
                     edtLatitude.setText("");
@@ -129,8 +135,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        configurarRecycler();
 }
 
     @Override
