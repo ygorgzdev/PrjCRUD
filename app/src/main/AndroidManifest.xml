@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permissões necessárias -->
+    <!-- Permissões necessárias -->
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -28,13 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".CadastrarAmigo"
-            android:exported="false"
-            android:label="@string/title_activity_cadastrar_amigo"
-            android:theme="@style/Theme.PrjCRUD.NoActionBar" />
-
         <activity
             android:name=".DadosAmigoActivity"
             android:exported="false" />
