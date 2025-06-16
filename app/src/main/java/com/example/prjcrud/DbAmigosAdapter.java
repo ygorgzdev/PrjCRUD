@@ -66,6 +66,10 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
                             Snackbar.make(v, "Excluindo o amigo [" + amigo.getNome() + "]!",
                                     Snackbar.LENGTH_LONG).setAction("Action", null).show();
                             excluirAmigo(amigo);
+                            // Atualizar contador na MainActivity
+                            if (mainActivity != null) {
+                                mainActivity.atualizarContadorAmigos();
+                            }
                         } else {
                             Snackbar.make(v, "Erro ao excluir o amigo [" + amigo.getNome() + "]!",
                                     Snackbar.LENGTH_LONG).setAction("Action", null).show();
@@ -75,20 +79,16 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
                     .create()
                     .show();
         });
-
-        // Configurar botão SMS
         holder.btnSms.setOnClickListener(v -> {
             mostrarDialogoSMS(amigo);
         });
 
-        // Configurar botão Ligar
         holder.btnLigar.setOnClickListener(v -> {
             if (mainActivity != null) {
                 mainActivity.fazerLigacao(amigo.getCelular());
             }
         });
 
-        // Configurar botão WhatsApp
         holder.btnWhats.setOnClickListener(v -> {
             if (mainActivity != null) {
                 mainActivity.abrirWhatsApp(amigo.getCelular());
@@ -99,13 +99,12 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
     private void mostrarDialogoSMS(DbAmigo amigo) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
         builder.setTitle("Enviar SMS para " + amigo.getNome());
-
-        // Criar EditText para a mensagem
         final EditText input = new EditText(mainActivity);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         input.setHint("Digite sua mensagem...");
         input.setLines(4);
         input.setMaxLines(6);
+        input.setPadding(20, 20, 20, 20);
         builder.setView(input);
 
         builder.setPositiveButton("Enviar", (dialog, which) -> {
@@ -150,6 +149,12 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
             amigos.remove(position);
             notifyItemRemoved(position);
         }
+    }
+
+    public void limparTodosAmigos() {
+        int tamanho = amigos.size();
+        amigos.clear();
+        notifyItemRangeRemoved(0, tamanho);
     }
 
     private Activity getActivity(View view) {
