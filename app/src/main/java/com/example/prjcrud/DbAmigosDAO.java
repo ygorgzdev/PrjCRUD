@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DbAmigosDAO {
+
     private final String TABLE_AMIGOS = "Amigos";
     private DbAmigosGateway gw;
 
@@ -29,13 +30,15 @@ public class DbAmigosDAO {
         cv.put("Status", status);
         if (id > 0) {
             return gw.getDatabase().update(TABLE_AMIGOS, cv, "ID=?", new String[]{ id + "" }) > 0;
+
         } else {
             return gw.getDatabase().insert(TABLE_AMIGOS, null, cv) > 0;
         }
     }
+
     public List<DbAmigo> listarAmigos (){
         List<DbAmigo> amigos = new ArrayList<>();
-        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos ORDER BY Nome ASC", null);
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos", null);
 
         while (cursor.moveToNext())
         {
@@ -50,43 +53,24 @@ public class DbAmigosDAO {
         cursor.close();
         return amigos;
     }
+
     public DbAmigo ultimoAmigo(){
-        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos ORDER BY ID DESC LIMIT 1", null);
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos ORDER BY ID DESC", null);
         if(cursor.moveToFirst()) {
-            @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("ID"));
-            @SuppressLint("Range") String nome = cursor.getString(cursor.getColumnIndex("Nome"));
-            @SuppressLint("Range") String celular = cursor.getString(cursor.getColumnIndex("Celular"));
-            @SuppressLint("Range") String latitude = cursor.getString(cursor.getColumnIndex("Latitude"));
-            @SuppressLint("Range") String longitude = cursor.getString(cursor.getColumnIndex("Longitude"));
-            @SuppressLint("Range") int status = cursor.getInt(cursor.getColumnIndex("Status"));
+            int id = cursor.getInt(cursor.getColumnIndex("ID"));
+            String nome = cursor.getString(cursor.getColumnIndex("Nome"));
+            String celular = cursor.getString(cursor.getColumnIndex("Celular"));
+            String latitude = cursor.getString(cursor.getColumnIndex("Latitude"));
+            String longitude = cursor.getString(cursor.getColumnIndex("Longitude"));
+            int status = cursor.getInt(cursor.getColumnIndex("Status"));
             cursor.close();
             return new DbAmigo(id, nome, celular, latitude, longitude, status);
         }
-        cursor.close();
         return null;
     }
+
     public boolean excluir(int id){
         return gw.getDatabase().delete(TABLE_AMIGOS, "ID=?", new String[]{ id + "" }) > 0;
     }
-    public boolean limparTodos(){
-        try {
-            int registrosApagados = gw.getDatabase().delete(TABLE_AMIGOS, null, null);
-            return registrosApagados >= 0; // Retorna true mesmo se não houver registros para apagar
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    public int contarAmigos(){
-        Cursor cursor = gw.getDatabase().rawQuery("SELECT COUNT(*) FROM " + TABLE_AMIGOS, null);
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            count = cursor.getInt(0);
-        }
-        cursor.close();
-        return count;
-    }
-    public boolean temRegistros(){
-        return contarAmigos() > 0;
-    }
+
 }

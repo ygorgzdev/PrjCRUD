@@ -1,17 +1,14 @@
 package com.example.prjcrud;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,149 +19,101 @@ import java.util.List;
 public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
 
     private final List<DbAmigo> amigos;
-    private final MainActivity mainActivity;
 
-    public DbAmigosAdapter(List<DbAmigo> amigos, MainActivity mainActivity) {
+    public DbAmigosAdapter(List<DbAmigo> amigos) {
         this.amigos = amigos;
-        this.mainActivity = mainActivity;
     }
+
 
     @Override
     public DbAmigosHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new DbAmigosHolder(LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.activity_dados_amigo, parent, false));
     }
-
     @Override
     public void onBindViewHolder(DbAmigosHolder holder, int position) {
-        DbAmigo amigo = amigos.get(position);
+        holder.txvNome.setText(amigos.get(position).getNome());
+        holder.txvCelular.setText(amigos.get(position).getCelular());
+        holder.txvLatitude.setText(amigos.get(position).getLatitude());
+        holder.txvLongitude.setText(amigos.get(position).getLongitude());
+        holder.btnEditar.setOnClickListener(new Button.OnClickListener() {
 
-        holder.txvNome.setText(amigo.getNome());
-        holder.txvCelular.setText(amigo.getCelular());
-        holder.txvLatitude.setText(amigo.getLatitude());
-        holder.txvLongitude.setText(amigo.getLongitude());
-
-        // Configurar botão Editar
-        holder.btnEditar.setOnClickListener(v -> {
-            Activity activity = getActivity(v);
-            Intent intent = activity.getIntent();
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            intent.putExtra("amigo", amigo);
-            activity.finish();
-            activity.startActivity(intent);
+            @Override
+            public void onClick(View v) {
+                Activity activity = getActivity(v);
+                Intent intent = activity.getIntent();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                intent.putExtra("amigo", amigos.get(position));
+                activity.finish();
+                activity.startActivity(intent);
+            }
         });
-
-        // Configurar botão Excluir
-        holder.btnExcluir.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-            builder.setTitle("Confirmação")
-                    .setMessage("Tem certeza que deseja excluir o amigo [" + amigo.getNome() + "]?")
-                    .setPositiveButton("Excluir", (dialog, which) -> {
-                        DbAmigosDAO dao = new DbAmigosDAO(v.getContext());
-                        boolean sucesso = dao.excluir(amigo.getId());
-                        if (sucesso) {
-                            Snackbar.make(v, "Excluindo o amigo [" + amigo.getNome() + "]!",
-                                    Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                            excluirAmigo(amigo);
-                            // Atualizar contador na MainActivity
-                            if (mainActivity != null) {
-                                mainActivity.atualizarContadorAmigos();
+        final DbAmigo amigo = amigos.get(position);
+        holder.btnExcluir.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final View view = v;
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setTitle("Confirmação")
+                        .setMessage("Tem certeza que deseja excluir o amigo ["+amigo.getNome().toString()+"]?")
+                        .setPositiveButton("Excluir", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                DbAmigo amigo = amigos.get(position);
+                                DbAmigosDAO dao = new DbAmigosDAO(view.getContext());
+                                boolean sucesso = dao.excluir(amigo.getId());
+                                if(sucesso) {
+                                    Snackbar.make(view, "Excluindo o amigo ["+amigo.getNome().toString()+"]!", Snackbar.LENGTH_LONG)
+                                            .setAction("Action", null).show();
+                                    excluirAmigo(amigo);
+                                }else{
+                                    Snackbar.make(view, "Erro ao excluir o amigo ["+amigo.getNome().toString()+"]!", Snackbar.LENGTH_LONG)
+                                            .setAction("Action", null).show();
+                                }
                             }
-                        } else {
-                            Snackbar.make(v, "Erro ao excluir o amigo [" + amigo.getNome() + "]!",
-                                    Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                        }
-                    })
-                    .setNegativeButton("Cancelar", null)
-                    .create()
-                    .show();
-        });
-        holder.btnSms.setOnClickListener(v -> {
-            mostrarDialogoSMS(amigo);
-        });
-
-        holder.btnLigar.setOnClickListener(v -> {
-            if (mainActivity != null) {
-                mainActivity.fazerLigacao(amigo.getCelular());
-            }
-        });
-
-        holder.btnWhats.setOnClickListener(v -> {
-            if (mainActivity != null) {
-                mainActivity.abrirWhatsApp(amigo.getCelular());
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .create()
+                        .show();
             }
         });
     }
-
-    private void mostrarDialogoSMS(DbAmigo amigo) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-        builder.setTitle("Enviar SMS para " + amigo.getNome());
-        final EditText input = new EditText(mainActivity);
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-        input.setHint("Digite sua mensagem...");
-        input.setLines(4);
-        input.setMaxLines(6);
-        input.setPadding(20, 20, 20, 20);
-        builder.setView(input);
-
-        builder.setPositiveButton("Enviar", (dialog, which) -> {
-            String mensagem = input.getText().toString().trim();
-            if (!mensagem.isEmpty()) {
-                if (mainActivity != null) {
-                    mainActivity.enviarSMS(amigo.getCelular(), mensagem);
-                }
-            } else {
-                Snackbar.make(mainActivity.findViewById(android.R.id.content),
-                        "Mensagem não pode estar vazia", Snackbar.LENGTH_SHORT).show();
-            }
-        });
-
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
     @Override
     public int getItemCount() {
         return amigos != null ? amigos.size() : 0;
     }
-
-    public void inserirAmigo(DbAmigo amigo) {
+    public void inserirAmigo(DbAmigo amigo){
         amigos.add(amigo);
-        notifyItemInserted(getItemCount() - 1);
+        notifyItemInserted(getItemCount());
     }
 
-    public void atualizarAmigo(DbAmigo amigo) {
-        int posicao = amigos.indexOf(amigo);
-        if (posicao != -1) {
-            amigos.set(posicao, amigo);
-            notifyItemChanged(posicao);
-        }
+    public void atualizarAmigo(DbAmigo amigo){
+        amigos.set(amigos.indexOf(amigo), amigo);
+        notifyItemChanged(amigos.indexOf(amigo));
     }
 
-    public void excluirAmigo(DbAmigo amigo) {
+    public void excluirAmigo(DbAmigo amigo)
+    {
         int position = amigos.indexOf(amigo);
-        if (position != -1) {
-            amigos.remove(position);
-            notifyItemRemoved(position);
-        }
+        amigos.remove(position);
+        notifyItemRemoved(position);
     }
 
-    public void limparTodosAmigos() {
-        int tamanho = amigos.size();
-        amigos.clear();
-        notifyItemRangeRemoved(0, tamanho);
-    }
+
 
     private Activity getActivity(View view) {
         Context context = view.getContext();
+
         while (context instanceof ContextWrapper) {
             if (context instanceof Activity) {
-                return (Activity) context;
+                return (Activity)context;
             }
-            context = ((ContextWrapper) context).getBaseContext();
+            context = ((ContextWrapper)context).getBaseContext();
         }
         return null;
     }
+
+
 }
+
+
