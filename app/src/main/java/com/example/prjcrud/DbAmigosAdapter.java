@@ -5,11 +5,13 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,7 +48,6 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
         holder.txvLatitude.setText(amigos.get(position).getLatitude());
         holder.txvLongitude.setText(amigos.get(position).getLongitude());
         holder.btnEditar.setOnClickListener(new Button.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 Activity activity = getActivity(v);
@@ -57,6 +58,7 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
                 activity.startActivity(intent);
             }
         });
+
         final DbAmigo amigo = amigos.get(position);
         holder.btnExcluir.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -86,11 +88,34 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
                         .show();
             }
         });
+
+        holder.btnSms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enviarSMS(v.getContext(), amigo);
+            }
+        });
+
+        holder.btnLigar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fazerLigacao(v.getContext(), amigo);
+            }
+        });
+
+        holder.btnWhats.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                abrirWhatsApp(v.getContext(), amigo);
+            }
+        });
     }
+
     @Override
     public int getItemCount() {
         return amigos != null ? amigos.size() : 0;
     }
+
     public void inserirAmigo(DbAmigo amigo){
         amigos.add(amigo);
         notifyItemInserted(getItemCount());
@@ -98,6 +123,7 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
             quantidadeListener.onQuantidadeChanged();
         }
     }
+
     public void atualizarAmigo(DbAmigo amigo){
         amigos.set(amigos.indexOf(amigo), amigo);
         notifyItemChanged(amigos.indexOf(amigo));
@@ -105,6 +131,7 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
             quantidadeListener.onQuantidadeChanged();
         }
     }
+
     public void excluirAmigo(DbAmigo amigo)
     {
         int position = amigos.indexOf(amigo);
@@ -135,5 +162,80 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
         return null;
     }
 
+    private void enviarSMS(Context context, DbAmigo amigo) {
+        try {
 
+            String numeroLimpo = amigo.getCelular().replaceAll("[^0-9]", "");
+            Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+            smsIntent.setData(Uri.parse("smsto:" + numeroLimpo));
+            smsIntent.putExtra("sms_body", "Olá " + amigo.getNome() + "! Como você está?");
+
+            if (smsIntent.resolveActivity(context.getPackageManager()) != null) {
+                context.startActivity(smsIntent);
+            } else {
+                Toast.makeText(context, "Nenhum aplicativo de SMS encontrado!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Erro ao abrir SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void fazerLigacao(Context context, DbAmigo amigo) {
+        try {
+
+            String numeroLimpo = amigo.getCelular().replaceAll("[^0-9]", "");
+            Intent callIntent = new Intent(Intent.ACTION_DIAL);
+            callIntent.setData(Uri.parse("tel:" + numeroLimpo));
+
+            if (callIntent.resolveActivity(context.getPackageManager()) != null) {
+                context.startActivity(callIntent);
+            } else {
+                Toast.makeText(context, "Nenhum aplicativo de telefone encontrado!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Erro ao fazer ligação: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void abrirWhatsApp(Context context, DbAmigo amigo) {
+        try {
+            String numeroLimpo = amigo.getCelular().replaceAll("[^0-9]", "");
+
+            if (!numeroLimpo.startsWith("55")) {
+                numeroLimpo = "55" + numeroLimpo;
+            }
+
+            String mensagem = "Olá " + amigo.getNome() + "! Como você está?";
+
+            try {
+                Intent whatsappIntent = new Intent(Intent.ACTION_VIEW);
+                whatsappIntent.setData(Uri.parse("https://api.whatsapp.com/send?phone=" + numeroLimpo + "&text=" + Uri.encode(mensagem)));
+                whatsappIntent.setPackage("com.whatsapp");
+
+                if (whatsappIntent.resolveActivity(context.getPackageManager()) != null) {
+                    context.startActivity(whatsappIntent);
+                } else {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    browserIntent.setData(Uri.parse("https://api.whatsapp.com/send?phone=" + numeroLimpo + "&text=" + Uri.encode(mensagem)));
+
+                    if (browserIntent.resolveActivity(context.getPackageManager()) != null) {
+                        context.startActivity(browserIntent);
+                    } else {
+                        Toast.makeText(context, "WhatsApp não instalado e nenhum navegador encontrado!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            } catch (Exception e) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(Uri.parse("https://web.whatsapp.com/send?phone=" + numeroLimpo + "&text=" + Uri.encode(mensagem)));
+
+                if (browserIntent.resolveActivity(context.getPackageManager()) != null) {
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "Erro ao abrir WhatsApp: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, "Erro ao abrir WhatsApp: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
 }
