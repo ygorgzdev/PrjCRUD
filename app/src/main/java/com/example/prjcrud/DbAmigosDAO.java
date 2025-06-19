@@ -68,9 +68,20 @@ public class DbAmigosDAO {
         }
         return null;
     }
-
     public boolean excluir(int id){
         return gw.getDatabase().delete(TABLE_AMIGOS, "ID=?", new String[]{ id + "" }) > 0;
+    }
+    public int contarAmigos(){
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT COUNT(*) FROM " + TABLE_AMIGOS, null);
+        int count = 0;
+        if(cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+    public boolean excluirTodos(){
+        return gw.getDatabase().delete(TABLE_AMIGOS, null, null) > 0;
     }
 
 }

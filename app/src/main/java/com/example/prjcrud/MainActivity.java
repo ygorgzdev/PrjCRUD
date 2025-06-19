@@ -1,5 +1,7 @@
 package com.example.prjcrud;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -153,8 +155,50 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
             return true;
         }
 
+        if (id == R.id.action_delete_all) {
+            confirmarExclusaoTodos();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
+
+    private void confirmarExclusaoTodos() {
+        DbAmigosDAO dao = new DbAmigosDAO(this);
+        int quantidade = dao.contarAmigos();
+
+        if (quantidade == 0) {
+            Snackbar.make(findViewById(android.R.id.content), "Não há amigos cadastrados para excluir!", Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirmação de Exclusão")
+                .setMessage("Tem certeza que deseja excluir TODOS os " + quantidade + " amigo(s) cadastrado(s)?\n\nEsta ação não pode ser desfeita!")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton("Excluir Todos", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        excluirTodosAmigos();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .create()
+                .show();
+    }
+
+    private void excluirTodosAmigos() {
+        DbAmigosDAO dao = new DbAmigosDAO(this);
+        boolean sucesso = dao.excluirTodos();
+
+        if (sucesso) {
+            adapter.limparTodos();
+            Snackbar.make(findViewById(android.R.id.content), "Todos os amigos foram excluídos com sucesso!", Snackbar.LENGTH_LONG).show();
+        } else {
+            Snackbar.make(findViewById(android.R.id.content), "Erro ao excluir todos os amigos!", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
 /*
     @Override
     public boolean onSupportNavigateUp() {

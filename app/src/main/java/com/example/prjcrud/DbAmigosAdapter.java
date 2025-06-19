@@ -114,6 +114,15 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
             quantidadeListener.onQuantidadeChanged();
         }
     }
+
+    public void limparTodos() {
+        amigos.clear();
+        notifyDataSetChanged();
+        if (quantidadeListener != null) {
+            quantidadeListener.onQuantidadeChanged();
+        }
+    }
+
     private Activity getActivity(View view) {
         Context context = view.getContext();
 
