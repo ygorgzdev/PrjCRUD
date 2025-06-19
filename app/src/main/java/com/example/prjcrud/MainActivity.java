@@ -24,8 +24,9 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.QuantidadeListener {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
@@ -55,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
             int status = 2;
         }
 
-
 /*
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.fab).setVisibility(View.VISIBLE);
             }
         });
-
 
         Button btnSalvar = (Button) findViewById(R.id.btnSalvar);
         btnSalvar.setOnClickListener(new View.OnClickListener() {
@@ -175,10 +174,23 @@ public class MainActivity extends AppCompatActivity {
 
         DbAmigosDAO dao = new DbAmigosDAO(this);
         adapter = new DbAmigosAdapter(dao.listarAmigos());
+        adapter.setQuantidadeListener(this);
         recyclerView.setAdapter(adapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-    }
 
+        atualizarQuantidadeAmigos();
+    }
+    private void atualizarQuantidadeAmigos() {
+        TextView txvQuantidadeAmigos = findViewById(R.id.txvQuantidadeAmigos);
+        if (txvQuantidadeAmigos != null && adapter != null) {
+            int quantidade = adapter.getItemCount();
+            txvQuantidadeAmigos.setText("Total de amigos cadastrados: " + quantidade);
+        }
+    }
+    @Override
+    public void onQuantidadeChanged() {
+        atualizarQuantidadeAmigos();
+    }
     DbAmigo amigoAlterado = null;
     private int getIndex(Spinner spinner, String myString) {
         int index = 0;

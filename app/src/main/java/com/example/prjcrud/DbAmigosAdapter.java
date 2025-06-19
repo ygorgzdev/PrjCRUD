@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,11 +20,19 @@ import java.util.List;
 public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
 
     private final List<DbAmigo> amigos;
+    private QuantidadeListener quantidadeListener;
+
+    public interface QuantidadeListener {
+        void onQuantidadeChanged();
+    }
 
     public DbAmigosAdapter(List<DbAmigo> amigos) {
         this.amigos = amigos;
     }
 
+    public void setQuantidadeListener(QuantidadeListener listener) {
+        this.quantidadeListener = listener;
+    }
 
     @Override
     public DbAmigosHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -85,22 +94,26 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
     public void inserirAmigo(DbAmigo amigo){
         amigos.add(amigo);
         notifyItemInserted(getItemCount());
+        if (quantidadeListener != null) {
+            quantidadeListener.onQuantidadeChanged();
+        }
     }
-
     public void atualizarAmigo(DbAmigo amigo){
         amigos.set(amigos.indexOf(amigo), amigo);
         notifyItemChanged(amigos.indexOf(amigo));
+        if (quantidadeListener != null) {
+            quantidadeListener.onQuantidadeChanged();
+        }
     }
-
     public void excluirAmigo(DbAmigo amigo)
     {
         int position = amigos.indexOf(amigo);
         amigos.remove(position);
         notifyItemRemoved(position);
+        if (quantidadeListener != null) {
+            quantidadeListener.onQuantidadeChanged();
+        }
     }
-
-
-
     private Activity getActivity(View view) {
         Context context = view.getContext();
 
@@ -115,5 +128,3 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
 
 
 }
-
-
