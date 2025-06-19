@@ -95,16 +95,40 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
                 EditText edtLatitude = (EditText) findViewById(R.id.edtLatitude);
                 EditText edtLongitude = (EditText) findViewById(R.id.edtLongitude);
 
-                String nome = edtNome.getText().toString();
-                String celular = edtCelular.getText().toString();
-                String latitude = edtLatitude.getText().toString();
-                String longitude = edtLongitude.getText().toString();
+                String nome = edtNome.getText().toString().trim();
+                String celular = edtCelular.getText().toString().trim();
+                String latitude = edtLatitude.getText().toString().trim();
+                String longitude = edtLongitude.getText().toString().trim();
+
+                // Validações básicas
+                if (nome.isEmpty()) {
+                    Snackbar.make(view, "Por favor, informe o nome do amigo!", Snackbar.LENGTH_LONG)
+                            .setAction("Ação", null).show();
+                    edtNome.requestFocus();
+                    return;
+                }
+
+                if (celular.isEmpty()) {
+                    Snackbar.make(view, "Por favor, informe o número do celular!", Snackbar.LENGTH_LONG)
+                            .setAction("Ação", null).show();
+                    edtCelular.requestFocus();
+                    return;
+                }
+                if (!validarCelularAnatel(celular)) {
+                    Snackbar.make(view, "Número de celular inválido! Use o formato: (XX) 9XXXX-XXXX", Snackbar.LENGTH_LONG)
+                            .setAction("Ação", null).show();
+                    edtCelular.requestFocus();
+                    return;
+                }
+
+                String celularFormatado = formatarCelular(celular);
+
                 DbAmigosDAO dao = new DbAmigosDAO(getBaseContext());
                 boolean sucesso;
                 if (amigoAlterado != null) {
-                    sucesso = dao.salvar(amigoAlterado.getId(), nome, celular, latitude, longitude, 2);
+                    sucesso = dao.salvar(amigoAlterado.getId(), nome, celularFormatado, latitude, longitude, 2);
                 } else {
-                    sucesso = dao.salvar(nome, celular, latitude, longitude, 1);
+                    sucesso = dao.salvar(nome, celularFormatado, latitude, longitude, 1);
                 }
                 if (sucesso) {
                     DbAmigo amigo = dao.ultimoAmigo();
@@ -135,9 +159,7 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
                             .setAction("Ação", null).show();
                 }
             }
-
         });
-
         configurarRecycler();
     }
 
@@ -234,6 +256,59 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
     @Override
     public void onQuantidadeChanged() {
         atualizarQuantidadeAmigos();
+    }
+
+    private boolean validarCelularAnatel(String celular) {
+        if (celular == null || celular.trim().isEmpty()) {
+            return false;
+        }
+
+        String numeroLimpo = celular.replaceAll("[^0-9]", "");
+
+        if (numeroLimpo.length() != 11) {
+            return false;
+        }
+
+        String ddd = numeroLimpo.substring(0, 2);
+        int dddInt = Integer.parseInt(ddd);
+
+        if (dddInt < 11 || dddInt > 99) {
+            return false;
+        }
+
+        char terceiroDigito = numeroLimpo.charAt(2);
+        if (terceiroDigito != '9') {
+            return false;
+        }
+
+        char quartoDigito = numeroLimpo.charAt(3);
+        if (quartoDigito < '6' || quartoDigito > '9') {
+            return false;
+        }
+
+        return true;
+    }
+
+    private String formatarCelular(String celular) {
+        if (celular == null) return "";
+
+        String numeroLimpo = celular.replaceAll("[^0-9]", "");
+
+        if (numeroLimpo.length() == 11) {
+            return String.format("(%s) %s%s%s%s%s-%s%s%s%s",
+                    numeroLimpo.substring(0, 2),
+                    numeroLimpo.charAt(2),
+                    numeroLimpo.charAt(3),
+                    numeroLimpo.charAt(4),
+                    numeroLimpo.charAt(5),
+                    numeroLimpo.charAt(6),
+                    numeroLimpo.charAt(7),
+                    numeroLimpo.charAt(8),
+                    numeroLimpo.charAt(9),
+                    numeroLimpo.charAt(10)
+            );
+        }
+        return celular;
     }
     DbAmigo amigoAlterado = null;
     private int getIndex(Spinner spinner, String myString) {
