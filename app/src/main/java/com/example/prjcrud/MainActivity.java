@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
 
             edtNome.setText(amigoAlterado.getNome());
             edtCelular.setText(amigoAlterado.getCelular());
-            int status = 2;
+            int status = 20;
         }
 
 /*
@@ -126,9 +126,9 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
                 DbAmigosDAO dao = new DbAmigosDAO(getBaseContext());
                 boolean sucesso;
                 if (amigoAlterado != null) {
-                    sucesso = dao.salvar(amigoAlterado.getId(), nome, celularFormatado, latitude, longitude, 2);
+                    sucesso = dao.salvar(amigoAlterado.getId(), nome, celularFormatado, latitude, longitude, 20);
                 } else {
-                    sucesso = dao.salvar(nome, celularFormatado, latitude, longitude, 1);
+                    sucesso = dao.salvar(nome, celularFormatado, latitude, longitude, 10);
                 }
                 if (sucesso) {
                     DbAmigo amigo = dao.ultimoAmigo();

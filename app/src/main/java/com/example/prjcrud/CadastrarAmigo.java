@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Toast;
+import android.widget.EditText;
 
 public class CadastrarAmigo extends AppCompatActivity {
 
@@ -23,6 +24,7 @@ public class CadastrarAmigo extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         Button btnCancelar = findViewById(R.id.btnCancelar);
         btnCancelar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -37,14 +39,34 @@ public class CadastrarAmigo extends AppCompatActivity {
         btnSalvar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                EditText edtNome = findViewById(R.id.edtNome);
+                EditText edtCelular = findViewById(R.id.edtCelular);
+                EditText edtLatitude = findViewById(R.id.edtLatitude);
+                EditText edtLongitude = findViewById(R.id.edtLongitude);
 
-                Toast.makeText(getApplicationContext(), "Amigo salvo com sucesso!", Toast.LENGTH_SHORT).show();
+                String nome = edtNome.getText().toString().trim();
+                String celular = edtCelular.getText().toString().trim();
+                String latitude = edtLatitude.getText().toString().trim();
+                String longitude = edtLongitude.getText().toString().trim();
+
+                if (nome.isEmpty() || celular.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "Preencha todos os campos obrigatórios!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                DbAmigosDAO dao = new DbAmigosDAO(getBaseContext());
+                boolean sucesso = dao.salvar(nome, celular, latitude, longitude, 10);
+
+                if (sucesso) {
+                    Toast.makeText(getApplicationContext(), "Amigo salvo com sucesso!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Erro ao salvar amigo!", Toast.LENGTH_SHORT).show();
+                }
+
                 Intent intent = new Intent(CadastrarAmigo.this, MainActivity.class);
                 startActivity(intent);
                 finish();
             }
         });
-
-
     }
 }
