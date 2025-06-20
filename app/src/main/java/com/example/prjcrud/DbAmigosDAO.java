@@ -94,6 +94,32 @@ public class DbAmigosDAO {
         return count;
     }
 
+    public List<DbAmigo> listarAmigosExcluidos(){
+        List<DbAmigo> amigos = new ArrayList<>();
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos WHERE Status = 30", null);
+
+        while (cursor.moveToNext())
+        {
+            @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("ID"));
+            @SuppressLint("Range") String nome = cursor.getString(cursor.getColumnIndex("Nome"));
+            @SuppressLint("Range") String celular = cursor.getString(cursor.getColumnIndex("Celular"));
+            @SuppressLint("Range") String latitude = cursor.getString(cursor.getColumnIndex("Latitude"));
+            @SuppressLint("Range") String longitude = cursor.getString(cursor.getColumnIndex("Longitude"));
+            @SuppressLint("Range") int situacao = cursor.getInt(cursor.getColumnIndex("Status"));
+            amigos.add(new DbAmigo(id, nome, celular, latitude, longitude, situacao));
+        }
+        cursor.close();
+        return amigos;
+    }
+
+    public boolean recuperarAmigo(int id){
+        ContentValues cv = new ContentValues();
+        cv.put("Status", 20);
+        return gw.getDatabase().update(TABLE_AMIGOS, cv, "ID=?", new String[]{ id + "" }) > 0;
+    }
+
+
+
     public boolean excluirTodos(){
         // código antigo:
         // return gw.getDatabase().delete(TABLE_AMIGOS, null, null) > 0;

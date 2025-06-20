@@ -28,6 +28,14 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.util.List;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+
 public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.QuantidadeListener {
 
     private AppBarConfiguration appBarConfiguration;
@@ -182,6 +190,11 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
             return true;
         }
 
+        if (id == R.id.action_view_deleted) {
+            exibirAmigosExcluidos();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -219,6 +232,61 @@ public class MainActivity extends AppCompatActivity implements DbAmigosAdapter.Q
         } else {
             Snackbar.make(findViewById(android.R.id.content), "Erro ao excluir todos os amigos!", Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    private void exibirAmigosExcluidos() {
+        DbAmigosDAO dao = new DbAmigosDAO(this);
+        List<DbAmigo> amigosExcluidos = dao.listarAmigosExcluidos();
+
+        if (amigosExcluidos.isEmpty()) {
+            Snackbar.make(findViewById(android.R.id.content), "Não há amigos excluídos para recuperar!", Snackbar.LENGTH_LONG).show();
+            return;
+        }
+
+        String[] nomes = new String[amigosExcluidos.size()];
+        for (int i = 0; i < amigosExcluidos.size(); i++) {
+            nomes[i] = amigosExcluidos.get(i).getNome() + " - " + amigosExcluidos.get(i).getCelular();
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Recuperar Amigos Excluídos")
+                .setItems(nomes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DbAmigo amigoSelecionado = amigosExcluidos.get(which);
+                        confirmarRecuperacao(amigoSelecionado);
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .create()
+                .show();
+    }
+
+    private void confirmarRecuperacao(DbAmigo amigo) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirmar Recuperação")
+                .setMessage("Deseja recuperar o amigo [" + amigo.getNome() + "]?")
+                .setPositiveButton("Recuperar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DbAmigosDAO dao = new DbAmigosDAO(MainActivity.this);
+                        boolean sucesso = dao.recuperarAmigo(amigo.getId());
+
+                        if (sucesso) {
+                            configurarRecycler();
+                            Snackbar.make(findViewById(android.R.id.content),
+                                    "Amigo [" + amigo.getNome() + "] recuperado com sucesso!",
+                                    Snackbar.LENGTH_LONG).show();
+                        } else {
+                            Snackbar.make(findViewById(android.R.id.content),
+                                    "Erro ao recuperar o amigo!",
+                                    Snackbar.LENGTH_LONG).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .create()
+                .show();
     }
 
 /*
