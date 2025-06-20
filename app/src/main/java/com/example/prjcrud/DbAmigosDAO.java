@@ -38,7 +38,10 @@ public class DbAmigosDAO {
 
     public List<DbAmigo> listarAmigos (){
         List<DbAmigo> amigos = new ArrayList<>();
-        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos", null);
+        // código antigo:
+        // Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos", null);
+
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT * FROM Amigos WHERE Status != 30", null);
 
         while (cursor.moveToNext())
         {
@@ -68,11 +71,21 @@ public class DbAmigosDAO {
         }
         return null;
     }
+
     public boolean excluir(int id){
-        return gw.getDatabase().delete(TABLE_AMIGOS, "ID=?", new String[]{ id + "" }) > 0;
+        // código antigo:
+        // return gw.getDatabase().delete(TABLE_AMIGOS, "ID=?", new String[]{ id + "" }) > 0;
+
+        ContentValues cv = new ContentValues();
+        cv.put("Status", 30);
+        return gw.getDatabase().update(TABLE_AMIGOS, cv, "ID=?", new String[]{ id + "" }) > 0;
     }
+
     public int contarAmigos(){
-        Cursor cursor = gw.getDatabase().rawQuery("SELECT COUNT(*) FROM " + TABLE_AMIGOS, null);
+        //código antigo:
+        //Cursor cursor = gw.getDatabase().rawQuery("SELECT COUNT(*) FROM " + TABLE_AMIGOS, null);
+
+        Cursor cursor = gw.getDatabase().rawQuery("SELECT COUNT(*) FROM " + TABLE_AMIGOS + " WHERE Status != 30", null);
         int count = 0;
         if(cursor.moveToFirst()) {
             count = cursor.getInt(0);
@@ -80,8 +93,14 @@ public class DbAmigosDAO {
         cursor.close();
         return count;
     }
+
     public boolean excluirTodos(){
-        return gw.getDatabase().delete(TABLE_AMIGOS, null, null) > 0;
+        // código antigo:
+        // return gw.getDatabase().delete(TABLE_AMIGOS, null, null) > 0;
+
+        ContentValues cv = new ContentValues();
+        cv.put("Status", 30);
+        return gw.getDatabase().update(TABLE_AMIGOS, cv, "Status != 30", null) > 0;
     }
 
 }

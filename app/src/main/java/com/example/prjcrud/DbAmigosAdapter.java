@@ -72,6 +72,7 @@ public class DbAmigosAdapter extends RecyclerView.Adapter<DbAmigosHolder> {
                             public void onClick(DialogInterface dialog, int which) {
                                 DbAmigo amigo = amigos.get(position);
                                 DbAmigosDAO dao = new DbAmigosDAO(view.getContext());
+
                                 boolean sucesso = dao.excluir(amigo.getId());
                                 if(sucesso) {
                                     Snackbar.make(view, "Excluindo o amigo ["+amigo.getNome().toString()+"]!", Snackbar.LENGTH_LONG)
